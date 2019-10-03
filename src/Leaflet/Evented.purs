@@ -1,18 +1,18 @@
-module Leaflet.Evented
-where
+module Leaflet.Evented where
 
 import Prelude
-import Control.Monad.Eff (Eff)
-import Leaflet.Types (LEAFLET)
+import Effect
 
 class Evented t e h a | t -> e, t -> h where
-  on:: forall eff
-     . t
-    -> a
-    -> (e -> Eff (leaflet :: LEAFLET | eff) Unit)
-    -> Eff (leaflet :: LEAFLET | eff) h
-  off :: forall eff
-       . t
-      -> a
-      -> h
-      -> Eff (leaflet :: LEAFLET | eff) Unit
+  on ::
+    forall eff.
+    t ->
+    a ->
+    (e -> Effect Unit) ->
+    Effect h
+  off ::
+    forall eff.
+    t ->
+    a ->
+    h ->
+    Effect Unit

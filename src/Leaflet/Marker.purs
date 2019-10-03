@@ -1,37 +1,37 @@
 module Leaflet.Marker
-( Marker
-, marker
-, Option (..)
-, draggable
-, keyboard
-, title
-, alt
-, zIndexOffset
-, opacity
-, riseOnHover
-, riseOffset
-, pane
-, layerOption
-, attribution
-)
-where
+  ( Marker
+  , marker
+  , Option(..)
+  , draggable
+  , keyboard
+  , title
+  , alt
+  , zIndexOffset
+  , opacity
+  , riseOnHover
+  , riseOffset
+  , pane
+  , layerOption
+  , attribution
+  ) where
 
-import Prelude ( Unit
-               , class Show
-               , show
-               , (<>)
-               , id
-               , (<<<)
-               , ($)
-               )
+import Prelude
+  ( Unit
+  , class Show
+  , show
+  , (<>)
+  , identity
+  , (<<<)
+  , ($)
+  )
 import Prelude as P
-import Control.Monad.Eff
+import Effect
 import Data.Array as Array
-import Data.Tuple (Tuple (..), fst, snd)
+import Data.Tuple (Tuple(..), fst, snd)
 import Leaflet.Types
 import Leaflet.LatLng
 import Leaflet.Options
-import Data.Maybe (Maybe (..))
+import Data.Maybe (Maybe(..))
 import Leaflet.Layer as Layer
 import Leaflet.Layer (Layer, class IsLayer)
 import Unsafe.Coerce (unsafeCoerce)
@@ -43,10 +43,11 @@ foreign import data Marker :: Type
 instance isLayerMarker :: IsLayer Marker where
   toLayer = unsafeCoerce
 
-foreign import markerJS :: forall e
-                            . LatLng
-                           -> Options
-                           -> Eff (leaflet :: LEAFLET | e) Marker
+foreign import markerJS ::
+  forall e.
+  LatLng ->
+  Options ->
+  Effect Marker
 
 -- | Options to be passed to a marker layer at construction time. See
 -- | http://leafletjs.com/reference-1.0.3.html#marker for an explanation of
@@ -61,7 +62,7 @@ data Option
   | RiseOnHover Boolean
   | RiseOffset Int
   | Pane String
--- | Icon Icon
+  -- | Icon Icon
   | LayerOption Layer.Option
 
 draggable :: Boolean -> Option
@@ -92,7 +93,7 @@ pane :: String -> Option
 pane = Pane
 
 layerOption :: Layer.Option -> Option
-layerOption = LayerOption 
+layerOption = LayerOption
 
 attribution :: String -> Option
 attribution = layerOption <<< Layer.attribution
@@ -114,12 +115,13 @@ instance isOptionMarkerOption :: IsOption Option where
 -- | [marker](http://leafletjs.com/reference-1.0.3.html#marker) at the
 -- | specified geographic coordinates.
 -- |
-marker :: forall e
-          . LatLng
-         -> Array Option
-         -> Eff (leaflet :: LEAFLET | e) Marker
+marker ::
+  LatLng ->
+  Array Option ->
+  Effect Marker
 marker position optionList = do
-  let options = mkOptions optionList
+  let
+    options = mkOptions optionList
   markerJS position options
 
 instance eventedMouseMarker :: Evented MouseEventType MouseEvent MouseEventHandle Marker where

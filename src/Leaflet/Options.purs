@@ -1,29 +1,36 @@
-module Leaflet.Options
-where
+module Leaflet.Options where
 
-import Prelude ( Unit
-               , class Show
-               , show
-               , (<>)
-               , id
-               , (<<<)
-               , ($)
-               )
+import Prelude
+  ( Unit
+  , class Show
+  , show
+  , (<>)
+  , identity
+  , (<<<)
+  , ($)
+  )
 import Prelude as P
 import Data.Array as Array
-import Data.Tuple (Tuple (..), fst, snd)
-import Data.Maybe (Maybe (..))
+import Data.Tuple (Tuple(..), fst, snd)
+import Data.Maybe (Maybe(..))
 import Leaflet.LatLng
 
 foreign import data OptVal :: Type
+
 foreign import data Options :: Type
 
 foreign import optValNull :: OptVal
+
 foreign import optValString :: String -> OptVal
+
 foreign import optValNumber :: Number -> OptVal
+
 foreign import optValInt :: Int -> OptVal
+
 foreign import optValBoolean :: Boolean -> OptVal
+
 foreign import optValArray :: Array OptVal -> OptVal
+
 foreign import unsafeOptVal :: ∀ a. a -> OptVal
 
 class IsOptVal a where
@@ -44,12 +51,14 @@ instance isOptValBoolean :: IsOptVal Boolean where
 instance isOptValArray :: IsOptVal a => IsOptVal (Array a) where
   toOptVal = optValArray <<< P.map toOptVal
 
-instance isOptValTuple :: (IsOptVal a, IsOptVal b)
-                       => IsOptVal (Tuple a b) where
+instance isOptValTuple ::
+  (IsOptVal a, IsOptVal b) =>
+  IsOptVal (Tuple a b) where
   toOptVal (Tuple x y) = optValArray [ toOptVal x, toOptVal y ]
 
-instance isOptValMaybe :: IsOptVal a
-                       => IsOptVal (Maybe a) where
+instance isOptValMaybe ::
+  IsOptVal a =>
+  IsOptVal (Maybe a) where
   toOptVal (Just x) = toOptVal x
   toOptVal Nothing = optValNull
 
@@ -62,16 +71,18 @@ instance isOptValLatLngBounds :: IsOptVal LatLngBounds where
 mkOption :: ∀ a. IsOptVal a => String -> a -> Tuple String OptVal
 mkOption name val = Tuple name (toOptVal val)
 
-foreign import mkOptionsJS :: (∀ a. Tuple String a -> String)
-                           -> (∀ b. Tuple b OptVal -> OptVal)
-                           -> Array (Tuple String OptVal)
-                           -> Options
+foreign import mkOptionsJS ::
+  (∀ a. Tuple String a -> String) ->
+  (∀ b. Tuple b OptVal -> OptVal) ->
+  Array (Tuple String OptVal) ->
+  Options
 
 class IsOption a where
   toOption :: a -> Tuple String OptVal
 
-mkOptions :: ∀ a. IsOption a
-          => Array a
-          -> Options
-mkOptions optlist =
-  mkOptionsJS fst snd $ P.map toOption optlist
+mkOptions ::
+  ∀ a.
+  IsOption a =>
+  Array a ->
+  Options
+mkOptions optlist = mkOptionsJS fst snd $ P.map toOption optlist
